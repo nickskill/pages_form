@@ -1,0 +1,23 @@
+main{
+    width: 10;
+    color: #362b9c;
+    font-family: Arial, sans-serif;
+}
+
+button{
+    margin-bottom: 10px;
+    padding: 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    background-color: #a1e2b4;
+}
+
+h1{
+    background-color: rgb(226, 153, 153);
+    color: #fffb00;
+}
+h2{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
