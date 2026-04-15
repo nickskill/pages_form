@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-eval' https://*.google.com https://*.googletagmanager.com https://gtmpx.com;">
     <link rel="stylesheet" href="style.css">
     <title>Список пользователей системы</title>
+    Content-Security-Policy: script-src 'self' 'unsafe-eval';
 </head>
 <body>
     <main class="animated-gradient">
@@ -24,7 +26,6 @@
             <p>Отображение пользователей системы:</p>
             <img src="загруженное.png" alt="Список пользователей" class="page-logo">
             <div class="button-group">
-                
                 <button id="btnAll">Показать все записи</button>
                 <button id="btnNew">Показать только NEW</button>
                 <button id="btnStats">Показать статистику</button>
@@ -37,10 +38,34 @@
             <div class="box1">
             <img src="edit-property.jpg">
             <button id="btn_edit">Редактировать список</button>
+            <div id="message"></div>
             </div>
         </section>
-        
+
+        <p id="textEl">DOM</p>
+
+
+    <div id="listEl">
+        <p></p>
+    </div>
+
+        <section id="controls">
+        <button id="btnAll2">Показать все</button>
+        <button id="btnNew2">Показать NEW</button>
+        <button id="btnSort2">Сортировать по value ↓</button>
+        <button id="btnStats2">Показать статистику</button>
+        </section>
+        <div id="message2"></div>
+
+    <section>
+    <h2>Список записей</h2>
+    <div id="listContainer"></div>
+    </section>
+
     </main>
+    <script src="data.js"></script>
+    <script src="logic.js"></script>
     <script src="script.js"></script>
+    <script src="practice-lr3.js"></script>
 </body>
 </html>

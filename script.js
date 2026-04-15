@@ -213,3 +213,139 @@ function showStats() {
    
     output.textContent = result;
 }
+
+//2 E//
+console.log(helloFromLogic());
+
+//1 F//
+const textEl = document.getElementById("textEl");
+if (textEl) {
+    textEl.textContent = "DOM работает";
+}
+
+//2 F//
+const listEl = document.getElementById("listEl");
+if (listEl) {
+    for (let i = 1; i <= 3; i++) {
+        const p = document.createElement("p");
+        p.textContent = `Параграф ${i}`;
+        listEl.appendChild(p);
+    }
+}
+
+//2.4//
+console.log(items);
+
+//2.6//
+function renderList(itemsToRender) {
+    const listEl = document.getElementById("listContainer");
+    if (!listEl) return;
+
+    listEl.textContent = "";
+    for (const item of itemsToRender) {
+        const card = document.createElement("div");
+        card.className = "item-card";
+        const h3 = document.createElement("h3");
+        h3.textContent = item.title;
+        const info = document.createElement("p");
+        info.textContent = `id=${item.id} | value=${item.value} | status=${item.status} | createdAt=${item.createdAt}`;
+        const btnRemove = document.createElement("button");
+        btnRemove.textContent = "Удалить";
+        btnRemove.dataset.action = "remove";
+        btnRemove.dataset.id = String(item.id);
+
+        card.appendChild(h3);
+        card.appendChild(info);
+        card.appendChild(btnRemove);
+
+        listEl.appendChild(card);
+    }
+}
+
+renderList(items);
+
+//2.7//
+function filterByStatus(items, status) {
+    return items.filter(item => item.status === status);
+}
+function sortByValueDesc(items) {
+    return [...items].sort((a, b) => b.value - a.value);
+}
+
+function buildStats(items) {
+    const totalCount = items.length;
+    const sumValue = items.reduce((acc, item) => acc + item.value, 0);
+    const maxValue = items.length > 0
+        ? Math.max(...items.map(item => item.value))
+        : 0;
+    const newCount = items.filter(item => item.status === "new").length;
+
+    return {
+        totalCount,
+        sumValue,
+        maxValue,
+        newCount
+    };
+}
+
+function renderList(itemsToRender) {
+    const listEl = document.getElementById("listContainer");
+    if (!listEl) return;
+    listEl.textContent = "";
+    for (const item of itemsToRender) {
+        const card = document.createElement("div");
+        card.className = "item-card";
+        const h3 = document.createElement("h3");
+        h3.textContent = item.title;
+        const info = document.createElement("p");
+        info.textContent = `id=${item.id} | value=${item.value} | status=${item.status} | createdAt=${item.createdAt}`;
+        const btnRemove = document.createElement("button");
+
+        btnRemove.textContent = "Удалить";
+        btnRemove.dataset.action = "remove";
+        btnRemove.dataset.id = String(item.id);
+        card.appendChild(h3);
+        card.appendChild(info);
+        card.appendChild(btnRemove);
+        listEl.appendChild(card);
+    }
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    const btnAll2   = document.getElementById("btnAll2");
+    const btnNew2   = document.getElementById("btnNew2");
+    const btnSort2  = document.getElementById("btnSort2");
+    const btnStats2 = document.getElementById("btnStats2");
+    const messageEl2 = document.getElementById("message2");
+
+    if (btnAll2) {
+        btnAll2.addEventListener("click", () => {
+            renderList(items);
+        });
+    }
+
+    if (btnNew2) {
+        btnNew2.addEventListener("click", () => {
+            const filtered = filterByStatus(items, "new");
+            renderList(filtered);
+        });
+    }
+
+    if (btnSort2) {
+        btnSort2.addEventListener("click", () => {
+            const sorted = sortByValueDesc(items);
+            renderList(sorted);
+        });
+    }
+
+    if (btnStats2) {
+        btnStats2.addEventListener("click", () => {
+            const stats = buildStats(items);
+            messageEl2.textContent =
+                `Всего записей: ${stats.totalCount}\n` +
+                `Сумма value: ${stats.sumValue}\n` +
+                `Максимум value: ${stats.maxValue}\n` +
+                `Количество status="new": ${stats.newCount}`;
+        });
+    }
+});

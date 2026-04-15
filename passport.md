@@ -70,6 +70,9 @@
 |index_form.html       |
 |passport.md           |
 |script.js             |
+|data.js               |
+|logic.js              |
+|practice-lr3.js       |
 |style.css             |
 | HTML-разметка | Форма регистрации пользователей и  список пользователей |
 | Подключение JavaScript | Подключён внешний JS-файл |
@@ -91,12 +94,15 @@
 ### Лабораторная работа №3  
 **Функции и структуры данных**
 
-| Реализуемый элемент | Описание |
-|--------------------|----------|
-| Массивы объектов | |
-| CRUD-операции | |
-| Функции обработки данных | |
-
+| Реализуемый элемент      | Описание                                                            |
+|--------------------------|---------------------------------------------------------------------|
+| Массивы объектов         | items содержит записи пользователей                                 |
+| CRUD-операции            | renderList(items); findById(items, id); checkNew(record);           |
+|                          | const record = {....}record.status = "blocked"; buildStats(items);  |
+| Функции обработки данных | calcTotal(a, b), formatRecord(id, title, status),                   |
+|                          | filterByStatus(items, status), findById(items, id),                 |
+|                          | sortByValueDesc(items), buildStats(items), checkNew(record),        |
+|                          | renderList(itemsToRender), helloFromLogic()                         |
 ---
 
 ### Лабораторная работа №4  
