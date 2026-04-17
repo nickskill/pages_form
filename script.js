@@ -349,3 +349,131 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 });
+
+//lab 4//
+const items100 = [];
+
+const form = document.getElementById("recordForm");
+const formErrors = document.getElementById("formErrors");
+const message = document.getElementById("message");
+const list = document.getElementById("list");
+const loadDataBtn = document.getElementById("loadDataBtn");
+
+function normalizeSpaces(s) {
+  return String(s).replace(/\s+/g, " ").trim();
+}
+
+function isValidTitle(s) {
+  return /^[^<>{};]*$/.test(s);
+}
+
+function isValidDateYMD(s) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+  const d = new Date(s + "T00:00:00");
+  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === s;
+}
+
+function validateForm(raw) {
+  const errors = [];
+  const title = normalizeSpaces(raw.title);
+  const value = Number(raw.value);
+  const createdAt = normalizeSpaces(raw.createdAt);
+
+  if (!title) errors.push("title обязательно");
+  if (title && !isValidTitle(title)) errors.push("title содержит недопустимые символы");
+  if (Number.isNaN(value)) errors.push("value должно быть числом");
+  else if (value < 0 || value > 1000) errors.push("value должно быть в диапазоне от 0 до 1000");
+  if (!isValidDateYMD(createdAt)) errors.push("createdAt должно быть корректной датой YYYY-MM-DD");
+
+  return { errors, normalized: { title, value, createdAt } };
+}
+
+function renderList(items100) {
+  list.innerHTML = items100
+    .map(
+      item => `<li>#${item.id} | ${item.title} | ${item.value} | ${item.status} | ${item.createdAt}</li>`
+    )
+    .join("");
+}
+
+function renderErrors(errors) {
+  formErrors.innerHTML = errors.length
+    ? `<ul>${errors.map(e => `<li>${e}</li>`).join("")}</ul>`
+    : "";
+}
+
+function setMessage(text) {
+  message.textContent = text;
+}
+
+function getNextId() {
+  return items.length ? Math.max(...items.map(i => i.id)) + 1 : 1;
+}
+
+form.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const raw = {
+    title: document.getElementById("titleInput").value,
+    value: document.getElementById("valueInput").value,
+    createdAt: document.getElementById("createdAtInput").value,
+    status: document.getElementById("statusInput").value
+  };
+
+  const { errors, normalized } = validateForm(raw);
+
+  if (errors.length) {
+    renderErrors(errors);
+    setMessage("Исправьте ошибки формы");
+    return;
+  }
+
+  items.push({
+    id: getNextId(),
+    title: normalized.title,
+    value: normalized.value,
+    status: raw.status,
+    createdAt: normalized.createdAt
+  });
+
+  renderList(items);
+  renderErrors([]);
+  form.reset();
+  setMessage("Запись успешно добавлена");
+});
+
+async function safeFetchJson(url) {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      return { ok: false, error: "Ошибка HTTP", details: `Status: ${response.status} ${response.statusText}` };
+    }
+    const data = await response.json();
+    return { ok: true, data };
+  } catch (err) {
+    return { ok: false, error: "Ошибка сети", details: err.message };
+  }
+}
+
+loadDataBtn.addEventListener("click", async () => {
+  setMessage("Загрузка данных...");
+
+  const result = await safeFetchJson("https://jsonplaceholder.typicode.com/posts");
+
+  if (!result.ok) {
+    console.error(result.details);
+    setMessage(`Не удалось загрузить данные: ${result.error}`);
+    return;
+  }
+
+  const newItems = result.data.slice(0, 3).map((p, idx) => ({
+    id: getNextId() + idx,
+    title: normalizeSpaces(String(p.title)).slice(0, 40),
+    value: Number(p.id),
+    status: "new",
+    createdAt: "2026-01-01"
+  }));
+
+  items.push(...newItems);
+  renderList(items);
+  setMessage("Данные успешно загружены");
+});

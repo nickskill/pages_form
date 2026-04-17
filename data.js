@@ -56,3 +56,20 @@ const items = [
         createdAt: "2024-12-10"
     }
 ];
+
+//lab 4//
+//d 1//
+const raw = {
+  title: "Test_text",
+  value: "42",
+  status: "new",
+  createdAt: "2026-01-05"
+};
+
+//d 2//
+const errorRecord = {
+  title: "Test<text>",
+  value: 1005,
+  status: "new",
+  createdAt: "2026.01.055"
+};

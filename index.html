@@ -62,10 +62,31 @@
     <div id="listContainer"></div>
     </section>
 
+    <form id="recordForm">
+       <input id="titleInput" name="title" placeholder="Название" />
+       <input id="valueInput" name="value" placeholder="Value" />
+       <input id="createdAtInput" name="createdAt" placeholder="YYYY-MM-DD" />
+       <select id="statusInput" name="status">
+         <option value="new">new</option>
+         <option value="done">done</option>
+       </select>
+       <button type="submit">Сохранить</button>
+    </form>
+
+    <div id="formErrors"></div>
+
+    <div id="controls">
+      <button id="loadDataBtn" type="button">Загрузить данные из внешнего сервиса</button>
+    </div>
+
+    <div id="message"></div>
+    <ul id="list"></ul>
+
     </main>
     <script src="data.js"></script>
     <script src="logic.js"></script>
     <script src="script.js"></script>
     <script src="practice-lr3.js"></script>
+    <script src="practice-lr4.js"></script>
 </body>
 </html>
