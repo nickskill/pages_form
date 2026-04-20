@@ -49,35 +49,32 @@
         <p></p>
     </div>
 
-        <section id="controls">
-        <button id="btnAll2">Показать все</button>
-        <button id="btnNew2">Показать NEW</button>
-        <button id="btnSort2">Сортировать по value ↓</button>
-        <button id="btnStats2">Показать статистику</button>
-        </section>
-        <div id="message2"></div>
-
-    <section>
-    <h2>Список записей</h2>
-    <div id="listContainer"></div>
-    </section>
-
+        <!-- Добавляем форму и элементы управления -->
+<section id="form-section">
+    <h3>Добавить новую запись</h3>
     <form id="recordForm">
-       <input id="titleInput" name="title" placeholder="Название" />
-       <input id="valueInput" name="value" placeholder="Value" />
-       <input id="createdAtInput" name="createdAt" placeholder="YYYY-MM-DD" />
-       <select id="statusInput" name="status">
-         <option value="new">new</option>
-         <option value="done">done</option>
-       </select>
-       <button type="submit">Сохранить</button>
+        <input id="titleInput" name="title" placeholder="ФИО" required />
+        <input id="valueInput" name="value" placeholder="Value (0-1000)" type="number" />
+        <input id="createdAtInput" name="createdAt" placeholder="YYYY-MM-DD" />
+        <select id="statusInput" name="status">
+            <option value="new">new</option>
+            <option value="active">active</option>
+            <option value="blocked">blocked</option>
+        </select>
+        <button type="submit">Сохранить</button>
     </form>
-
     <div id="formErrors"></div>
+    <button id="loadDataBtn" type="button">Загрузить данные из внешнего сервиса</button>
+</section>
 
-    <div id="controls">
-      <button id="loadDataBtn" type="button">Загрузить данные из внешнего сервиса</button>
-    </div>
+<!-- Блок управления остается -->
+<section id="controls">
+    <button id="btnAll2">Показать все</button>
+    <button id="btnNew2">Показать NEW</button>
+    <button id="btnSort2">Сортировать по value ↓</button>
+    <button id="btnStats2">Показать статистику</button>
+</div>
+<div id="message2"></div> <!-- Здесь будут карточки -->
 
     <div id="message"></div>
     <ul id="list"></ul>

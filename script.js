@@ -374,18 +374,18 @@ function isValidDateYMD(s) {
 }
 
 function validateForm(raw) {
-  const errors = [];
-  const title = normalizeSpaces(raw.title);
-  const value = Number(raw.value);
-  const createdAt = normalizeSpaces(raw.createdAt);
-
-  if (!title) errors.push("title обязательно");
-  if (title && !isValidTitle(title)) errors.push("title содержит недопустимые символы");
-  if (Number.isNaN(value)) errors.push("value должно быть числом");
-  else if (value < 0 || value > 1000) errors.push("value должно быть в диапазоне от 0 до 1000");
-  if (!isValidDateYMD(createdAt)) errors.push("createdAt должно быть корректной датой YYYY-MM-DD");
-
-  return { errors, normalized: { title, value, createdAt } };
+    const normalized = buildRecordFromForm(raw); // ✅ Используем из logic.js
+    const errors = collectErrors(normalized);    // ✅ Используем из logic.js
+    
+    return { 
+        errors, 
+        normalized: {
+            title: normalized.title,
+            value: normalized.value,
+            createdAt: normalized.createdAt,
+            status: raw.status
+        }
+    };
 }
 
 function renderList(items100) {
@@ -409,6 +409,9 @@ function setMessage(text) {
 function getNextId() {
   return items.length ? Math.max(...items.map(i => i.id)) + 1 : 1;
 }
+
+
+
 
 form.addEventListener("submit", (e) => {
   e.preventDefault();
@@ -476,4 +479,150 @@ loadDataBtn.addEventListener("click", async () => {
   items.push(...newItems);
   renderList(items);
   setMessage("Данные успешно загружены");
+});
+
+// ✅ РЕНДЕР КАРТОЧЕК В #message2
+function renderList(itemsToRender) {
+    const messageEl = document.getElementById("message2");
+    if (!messageEl) return;
+
+    messageEl.innerHTML = "";
+    
+    for (const item of itemsToRender) {
+        const card = document.createElement("div");
+        card.className = "item-card";
+        card.style.cssText = `
+            border: 1px solid #ccc; 
+            border-radius: 8px; 
+            padding: 16px; 
+            margin: 12px 0; 
+            background: #f9f9f9;
+        `;
+        
+        card.innerHTML = `
+            <h3 style="margin: 0 0 8px 0; color: #333;">${item.title}</h3>
+            <p style="margin: 4px 0; color: #666;">
+                ID: ${item.id} | Value: ${item.value} | 
+                Status: <span style="color: ${item.status === 'new' ? 'orange' : item.status === 'active' ? 'green' : 'red'}">${item.status}</span> | 
+                Created: ${item.createdAt}
+            </p>
+        `;
+        
+        messageEl.appendChild(card);
+    }
+}
+
+// UI функции
+function renderErrors(errors) {
+    const formErrors = document.getElementById("formErrors");
+    if (!formErrors) return;
+    
+    formErrors.innerHTML = errors.length
+        ? `<ul style="color: red; margin: 8px 0;">${errors.map(e => `<li>${e}</li>`).join("")}</ul>`
+        : "";
+}
+
+function setMessage(text, isError = false) {
+    const messageEl = document.getElementById("message2");
+    if (messageEl) {
+        messageEl.innerHTML = `<div style="padding: 16px; background: ${isError ? '#f8d7da' : '#d4edda'}; border: 1px solid ${isError ? '#f5c6cb' : '#c3e6cb'}; border-radius: 4px; margin: 12px 0;">${text}</div>`;
+        setTimeout(() => messageEl.innerHTML = "", 5000); // автоочистка
+    }
+}
+
+// ✅ АСИНХРОННАЯ ИНТЕГРАЦИЯ С safeFetchJson ИЗ LOGIC.JS
+async function loadExternalData() {
+    setMessage("⏳ Загрузка данных...", false);
+    
+    const result = await safeFetchJson("https://jsonplaceholder.typicode.com/posts"); // ✅ Используем из logic.js
+    
+    if (!result.ok) {
+        console.error("Ошибка загрузки:", result.details);
+        setMessage(`❌ ${result.error}: ${result.details}`, true);
+        return;
+    }
+
+    // Нормализуем данные с normalizeApiValue
+    const newItems = result.data.slice(0, 5).map((post, idx) => ({
+        id: getNextId() + idx,
+        title: normalizeSpaces(post.title).slice(0, 50),        // ✅ normalizeSpaces
+        value: normalizeApiValue(post.id * 10),                  // ✅ normalizeApiValue
+        status: "new",
+        createdAt: new Date().toISOString().slice(0, 10)
+    }));
+
+    items.push(...newItems);
+    renderList(items);
+    setMessage(`✅ Загружено ${newItems.length} записей из API`);
+}
+
+// ✅ ИНИЦИАЛИЗАЦИЯ
+document.addEventListener("DOMContentLoaded", function () {
+    // Кнопки управления (используем функции из logic.js)
+    document.getElementById("btnAll2")?.addEventListener("click", () => {
+        renderList(items);
+    });
+
+    document.getElementById("btnNew2")?.addEventListener("click", () => {
+        const filtered = filterByStatus(items, "new");  // ✅ filterByStatus
+        renderList(filtered);
+    });
+
+    document.getElementById("btnSort2")?.addEventListener("click", () => {
+        const sorted = sortByValueDesc(items);          // ✅ sortByValueDesc
+        renderList(sorted);
+    });
+
+    document.getElementById("btnStats2")?.addEventListener("click", () => {
+        const stats = buildStats(items);                 // ✅ buildStats
+        document.getElementById("message2").innerHTML = `
+            <div style="background: #e7f3ff; padding: 20px; border-radius: 8px; border-left: 4px solid #007bff;">
+                <h3>📊 Статистика (${items.length} записей)</h3>
+                <p><strong>Всего:</strong> ${stats.totalCount}</p>
+                <p><strong>Сумма value:</strong> ${stats.sumValue.toLocaleString()}</p>
+                <p><strong>Максимум:</strong> ${stats.maxValue}</p>
+                <p><strong>NEW:</strong> ${stats.newCount}</p>
+            </div>
+        `;
+    });
+
+    // ✅ ФОРМА с полной валидацией
+    const form = document.getElementById("recordForm");
+    if (form) {
+        form.addEventListener("submit", (e) => {
+            e.preventDefault();
+            const raw = {
+                title: document.getElementById("titleInput").value,
+                value: document.getElementById("valueInput").value,
+                createdAt: document.getElementById("createdAtInput").value,
+                status: document.getElementById("statusInput").value
+            };
+
+            const { errors, normalized } = validateForm(raw); // ✅ collectErrors + buildRecordFromForm
+
+            if (errors.length) {
+                renderErrors(errors);
+                setMessage("❌ Исправьте ошибки формы", true);
+                return;
+            }
+
+            // ✅ Добавляем запись
+            const newRecord = {
+                id: getNextId(),
+                ...normalized,
+                status: raw.status
+            };
+
+            items.push(newRecord);
+            renderList(items);
+            renderErrors([]);
+            form.reset();
+            setMessage(`✅ Добавлена запись #${newRecord.id}`);
+        });
+    }
+
+    // ✅ КНОПКА АСИНХРОННОЙ ЗАГРУЗКИ
+    document.getElementById("loadDataBtn")?.addEventListener("click", loadExternalData);
+    // Инициальный рендер
+    renderList(items);
 });
