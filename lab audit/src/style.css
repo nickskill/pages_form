@@ -1,0 +1,248 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: #f5f5f5;
+  color: #333;
+  padding: 20px;
+}
+
+.app {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+h1 {
+  text-align: center;
+  color: #1a237e;
+  margin-bottom: 24px;
+}
+
+/* --- Доска --- */
+.board {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.column {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  min-height: 320px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  border-top: 4px solid;
+}
+
+.column h2 {
+  font-size: 1.05rem;
+  margin-bottom: 12px;
+}
+
+.column-todo         { border-color: #1565c0; }
+.column-todo h2      { color: #1565c0; }
+.column-in-progress  { border-color: #ef6c00; }
+.column-in-progress h2 { color: #ef6c00; }
+.column-done         { border-color: #2e7d32; }
+.column-done h2      { color: #2e7d32; }
+
+.empty-hint {
+  font-size: 0.85rem;
+  color: #999;
+  font-style: italic;
+}
+
+/* --- Карточка задачи --- */
+.task-card {
+  background: #fafafa;
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  border-left: 4px solid #ccc;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+}
+
+.task-card.priority-high   { border-left-color: #e53935; }
+.task-card.priority-medium { border-left-color: #fb8c00; }
+.task-card.priority-low    { border-left-color: #43a047; }
+
+.task-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.task-header h3 {
+  font-size: 0.95rem;
+  color: #1a237e;
+}
+
+.task-desc {
+  font-size: 0.82rem;
+  color: #555;
+  margin-bottom: 8px;
+}
+
+.task-footer {
+  font-size: 0.75rem;
+}
+
+/* --- Бейджи приоритета --- */
+.badge {
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 10px;
+  color: white;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.badge-high   { background: #e53935; }
+.badge-medium { background: #fb8c00; }
+.badge-low    { background: #43a047; }
+
+/* --- Теги --- */
+.tag {
+  display: inline-block;
+  background: #e8eaf6;
+  color: #1a237e;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.tag-backend  { background: #e3f2fd; color: #0d47a1; }
+.tag-frontend { background: #f3e5f5; color: #4a148c; }
+.tag-design   { background: #fce4ec; color: #880e4f; }
+.tag-devops   { background: #e8f5e9; color: #1b5e20; }
+
+/* --- Форма --- */
+.add-form {
+  display: grid;
+  grid-template-columns: 2fr 3fr 1fr 1fr auto;
+  gap: 8px;
+  margin-bottom: 24px;
+  padding: 14px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.add-form input,
+.add-form select {
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+.add-form button {
+  background: #1a237e;
+  color: white;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.add-form button:hover {
+  background: #283593;
+}
+
+/* --- Действия в карточке --- */
+.task-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.task-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.btn-move {
+  background: #e8eaf6;
+  color: #1a237e;
+  border: none;
+  border-radius: 4px;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  font-size: 0.7rem;
+}
+
+.btn-move:hover:not(:disabled) {
+  background: #c5cae9;
+}
+
+.btn-move:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.btn-delete {
+  margin-left: auto;
+  background: transparent;
+  color: #e53935;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+}
+
+.btn-delete:hover {
+  background: #ffebee;
+}
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.btn-reset {
+  background: #757575;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-reset:hover {
+  background: #616161;
+}
+
+.filter-bar {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  background: #f8f9ff;
+  border-radius: 8px;
+  border: 1px solid #c5cae9;
+}
+
+.filter-bar label {
+  font-size: 0.85rem;
+  color: #1a237e;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.filter-bar select {
+  padding: 4px 8px;
+  border: 1px solid #c5cae9;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
