@@ -29,7 +29,7 @@ function buildRecordFromForm(raw) {
     title: normalizeSpaces(raw.title),
     value: Number(raw.value),
     status: raw.status,
-    createdAt: raw.createdAt
+    createdAt: normalizeSpaces(raw.createdAt)
   };
 }
 

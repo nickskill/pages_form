@@ -52,7 +52,7 @@ function normalizeSpaces(s) {
 
 //c 1//
 function validateRequired(value, fieldName) {
-  return value.trim() ? null : `${fieldName} обязательно`;
+  return String(value).trim() ? null : `${fieldName} обязательно`;
 }
 
 //c 2//
@@ -66,28 +66,28 @@ function validateNumberRange(n, min, max, fieldName) {
   return null;
 }
 
-//d 1//
-function buildRecordFromForm(raw) {
-  return {
-    title: normalizeSpaces(raw.title),
-    value: Number(raw.value),
-    status: raw.status,
-    createdAt: raw.createdAt
-  };
-}
+//d 1 находится в script.js//
 
 //d 2//
 function collectErrors(record) {
   const errors = [];
-  if (!isValidTitle(record.title)) {
+
+  const title = normalizeSpaces(record.title ?? "");
+  const createdAt = normalizeSpaces(record.createdAt ?? "");
+  const value = Number(record.value);
+
+  const requiredTitle = validateRequired(title, "title");
+  if (requiredTitle) errors.push(requiredTitle);
+
+  if (title && !validTitle(title)) {
     errors.push("'title' содержит недопустимые символы.");
   }
-  if (!isValidDateYMD(record.createdAt)) {
-    errors.push("'createdAt' должно иметь формат даты.");
+
+  if (!validDate(createdAt)) {
+    errors.push("'createdAt' должно иметь формат YYYY-MM-DD.");
   }
-  const requiredCheck = validateRequired(record.title, "title");
-  if (requiredCheck) errors.push(requiredCheck);
-  const valueErr = validateNumberRange(record.value, 0, 100, "value");
+
+  const valueErr = validateNumberRange(value, 0, 1000, "value");
   if (valueErr) errors.push(valueErr);
 
   return errors;
@@ -115,14 +115,9 @@ async function safeFetchJson(url) {
         details: `Status: ${response.status} ${response.statusText}`
       };
     }
-
     const data = await response.json();
-    return {
-      ok: true,
-      data
-    };
-  } 
-  catch (err) {
+    return { ok: true, data };
+  } catch (err) {
     return {
       ok: false,
       error: "Ошибка сети",
@@ -161,13 +156,10 @@ console.log("Некорректный JSON:", incorr);
 
 //f 2//
 function normalizeApiValue(x) {
-  if (typeof x === "number" && Number.isFinite(x)) {
-    return x;
-  }
+  if (typeof x === "number" && Number.isFinite(x)) return x;
   if (typeof x === "string" && x.trim() !== "") {
     const n = Number(x);
     return Number.isFinite(n) ? n : 0;
   }
-
   return 0;
 }

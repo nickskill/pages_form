@@ -1,8 +1,10 @@
-const button_form = document.getElementById('btn_form');
+const buttonForm = document.getElementById('btn_form');
 
-button_form.addEventListener('click', () => {
-    window.location.href = './index_form.html';
-});
+if (buttonForm) {
+  buttonForm.addEventListener("click", () => {
+    window.location.href = "./index_form.html";
+  });
+}
 
 const appConfig = {
   appTitle: "Система регистрация и просмотра списка пользователей",
@@ -226,67 +228,50 @@ if (textEl) {
 //2 F//
 const listEl = document.getElementById("listEl");
 if (listEl) {
-    for (let i = 1; i <= 3; i++) {
-        const p = document.createElement("p");
-        p.textContent = `Параграф ${i}`;
-        listEl.appendChild(p);
-    }
+  listEl.innerHTML = "";
+  for (let i = 1; i <= 3; i++) {
+    const p = document.createElement("p");
+    p.textContent = `Параграф ${i}`;
+    listEl.appendChild(p);
+  }
 }
 
 //2.4//
 console.log(items);
 
 //2.6//
-function renderList(itemsToRender) {
-    const listEl = document.getElementById("listContainer");
-    if (!listEl) return;
+function renderCards(itemsToRender) {
+  const container = document.getElementById("message2");
+  if (!container) return;
 
-    listEl.textContent = "";
-    for (const item of itemsToRender) {
-        const card = document.createElement("div");
-        card.className = "item-card";
-        const h3 = document.createElement("h3");
-        h3.textContent = item.title;
-        const info = document.createElement("p");
-        info.textContent = `id=${item.id} | value=${item.value} | status=${item.status} | createdAt=${item.createdAt}`;
-        const btnRemove = document.createElement("button");
-        btnRemove.textContent = "Удалить";
-        btnRemove.dataset.action = "remove";
-        btnRemove.dataset.id = String(item.id);
+    container.innerHTML = "";
+  for (const item of itemsToRender) {
+    const card = document.createElement("div");
+    card.className = "item-card";
+    card.style.cssText = `
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 16px;
+      margin: 12px 0;
+      background: #f9f9f9;
+    `;
 
-        card.appendChild(h3);
-        card.appendChild(info);
-        card.appendChild(btnRemove);
+    card.innerHTML = `
+      <h3 style="margin: 0 0 8px 0; color: #333;">${item.title}</h3>
+      <p style="margin: 4px 0; color: #666;">
+        ID: ${item.id} | Value: ${item.value} |
+        Status: <span style="color: ${item.status === "new" ? "orange" : item.status === "active" ? "green" : "red"}">${item.status}</span> |
+        Created: ${item.createdAt}
+      </p>
+    `;
 
-        listEl.appendChild(card);
-    }
+    container.appendChild(card);
+  }
 }
 
-renderList(items);
+renderCards(items);
 
 //2.7//
-function filterByStatus(items, status) {
-    return items.filter(item => item.status === status);
-}
-function sortByValueDesc(items) {
-    return [...items].sort((a, b) => b.value - a.value);
-}
-
-function buildStats(items) {
-    const totalCount = items.length;
-    const sumValue = items.reduce((acc, item) => acc + item.value, 0);
-    const maxValue = items.length > 0
-        ? Math.max(...items.map(item => item.value))
-        : 0;
-    const newCount = items.filter(item => item.status === "new").length;
-
-    return {
-        totalCount,
-        sumValue,
-        maxValue,
-        newCount
-    };
-}
 
 function renderList(itemsToRender) {
     const listEl = document.getElementById("listContainer");
@@ -364,28 +349,59 @@ function normalizeSpaces(s) {
 }
 
 function isValidTitle(s) {
-  return /^[^<>{};]*$/.test(s);
+  return typeof s === "string" && s.trim() !== "" && /^[^<>{};]*$/.test(s);
 }
 
 function isValidDateYMD(s) {
+  if (typeof s !== "string") return false;
   if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
-  const d = new Date(s + "T00:00:00");
-  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === s;
+
+  const [y, m, d] = s.split("-").map(Number);
+  const date = new Date(y, m - 1, d);
+
+  return (
+    date.getFullYear() === y &&
+    date.getMonth() === m - 1 &&
+    date.getDate() === d
+  );
 }
 
 function validateForm(raw) {
-    const normalized = buildRecordFromForm(raw); // ✅ Используем из logic.js
-    const errors = collectErrors(normalized);    // ✅ Используем из logic.js
-    
-    return { 
-        errors, 
-        normalized: {
-            title: normalized.title,
-            value: normalized.value,
-            createdAt: normalized.createdAt,
-            status: raw.status
-        }
-    };
+  const normalized = {
+    title: normalizeSpaces(raw.title ?? ""),
+    value: Number(raw.value),
+    status: raw.status ?? "new",
+    createdAt: normalizeSpaces(raw.createdAt ?? "")
+  };
+
+  const errors = [];
+
+  if (validateRequired(normalized.title, "title")) {
+    errors.push(validateRequired(normalized.title, "title"));
+  }
+
+  if (normalized.title && !validTitle(normalized.title)) {
+    errors.push("'title' содержит недопустимые символы.");
+  }
+
+  if (!validDate(normalized.createdAt)) {
+    errors.push("'createdAt' должно иметь формат YYYY-MM-DD.");
+  }
+
+  const valueErr = validateNumberRange(normalized.value, 0, 1000, "value");
+  if (valueErr) errors.push(valueErr);
+
+  return { errors, normalized };
+}
+
+function renderStats() {
+  const stats = buildStats(items);
+  setMessage(
+    `Всего записей: ${stats.totalCount}<br>
+     Сумма value: ${stats.sumValue}<br>
+     Максимум value: ${stats.maxValue}<br>
+     Количество status="new": ${stats.newCount}`
+  );
 }
 
 function renderList(items100) {
@@ -397,12 +413,15 @@ function renderList(items100) {
 }
 
 function renderErrors(errors) {
+  const formErrors = document.getElementById("formErrors");
+  if (!formErrors) return;
+
   formErrors.innerHTML = errors.length
-    ? `<ul>${errors.map(e => `<li>${e}</li>`).join("")}</ul>`
+    ? `<ul style="color: red; margin: 8px 0;">${errors.map(e => `<li>${e}</li>`).join("")}</ul>`
     : "";
 }
 
-function setMessage(text) {
+function setMessage1(text) {
   message.textContent = text;
 }
 
@@ -426,7 +445,7 @@ form.addEventListener("submit", (e) => {
 
   if (errors.length) {
     renderErrors(errors);
-    setMessage("Исправьте ошибки формы");
+    setMessage1("Исправьте ошибки формы");
     return;
   }
 
@@ -441,30 +460,17 @@ form.addEventListener("submit", (e) => {
   renderList(items);
   renderErrors([]);
   form.reset();
-  setMessage("Запись успешно добавлена");
+  setMessage1("Запись успешно добавлена");
 });
 
-async function safeFetchJson(url) {
-  try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      return { ok: false, error: "Ошибка HTTP", details: `Status: ${response.status} ${response.statusText}` };
-    }
-    const data = await response.json();
-    return { ok: true, data };
-  } catch (err) {
-    return { ok: false, error: "Ошибка сети", details: err.message };
-  }
-}
-
 loadDataBtn.addEventListener("click", async () => {
-  setMessage("Загрузка данных...");
+  setMessage1("Загрузка данных...");
 
   const result = await safeFetchJson("https://jsonplaceholder.typicode.com/posts");
 
   if (!result.ok) {
     console.error(result.details);
-    setMessage(`Не удалось загрузить данные: ${result.error}`);
+    setMessage1(`Не удалось загрузить данные: ${result.error}`);
     return;
   }
 
@@ -478,7 +484,7 @@ loadDataBtn.addEventListener("click", async () => {
 
   items.push(...newItems);
   renderList(items);
-  setMessage("Данные успешно загружены");
+  setMessage1("Данные успешно загружены");
 });
 
 // ✅ РЕНДЕР КАРТОЧЕК В #message2
@@ -513,14 +519,6 @@ function renderList(itemsToRender) {
 }
 
 // UI функции
-function renderErrors(errors) {
-    const formErrors = document.getElementById("formErrors");
-    if (!formErrors) return;
-    
-    formErrors.innerHTML = errors.length
-        ? `<ul style="color: red; margin: 8px 0;">${errors.map(e => `<li>${e}</li>`).join("")}</ul>`
-        : "";
-}
 
 function setMessage(text, isError = false) {
     const messageEl = document.getElementById("message2");
@@ -557,72 +555,125 @@ async function loadExternalData() {
 }
 
 // ✅ ИНИЦИАЛИЗАЦИЯ
-document.addEventListener("DOMContentLoaded", function () {
-    // Кнопки управления (используем функции из logic.js)
-    document.getElementById("btnAll2")?.addEventListener("click", () => {
-        renderList(items);
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("btnAll")?.addEventListener("click", () => {
+    const output = document.getElementById("output");
+    if (!output) return;
+
+    let result = "Все записи\n\n";
+    items.forEach(item => {
+      result += `ID: ${item.id}, ФИО: ${item.title}, Сумма: ${item.value}, Статус: ${item.status}, Дата: ${item.createdAt}\n`;
     });
+    output.textContent = result;
+  });
 
-    document.getElementById("btnNew2")?.addEventListener("click", () => {
-        const filtered = filterByStatus(items, "new");  // ✅ filterByStatus
-        renderList(filtered);
-    });
+  document.getElementById("btnNew")?.addEventListener("click", () => {
+    const output = document.getElementById("output");
+    if (!output) return;
 
-    document.getElementById("btnSort2")?.addEventListener("click", () => {
-        const sorted = sortByValueDesc(items);          // ✅ sortByValueDesc
-        renderList(sorted);
-    });
+    const newUsers = filterByStatus(items, "new");
+    let result = "Только NEW\n\n";
 
-    document.getElementById("btnStats2")?.addEventListener("click", () => {
-        const stats = buildStats(items);                 // ✅ buildStats
-        document.getElementById("message2").innerHTML = `
-            <div style="background: #e7f3ff; padding: 20px; border-radius: 8px; border-left: 4px solid #007bff;">
-                <h3>📊 Статистика (${items.length} записей)</h3>
-                <p><strong>Всего:</strong> ${stats.totalCount}</p>
-                <p><strong>Сумма value:</strong> ${stats.sumValue.toLocaleString()}</p>
-                <p><strong>Максимум:</strong> ${stats.maxValue}</p>
-                <p><strong>NEW:</strong> ${stats.newCount}</p>
-            </div>
-        `;
-    });
-
-    // ✅ ФОРМА с полной валидацией
-    const form = document.getElementById("recordForm");
-    if (form) {
-        form.addEventListener("submit", (e) => {
-            e.preventDefault();
-            const raw = {
-                title: document.getElementById("titleInput").value,
-                value: document.getElementById("valueInput").value,
-                createdAt: document.getElementById("createdAtInput").value,
-                status: document.getElementById("statusInput").value
-            };
-
-            const { errors, normalized } = validateForm(raw); // ✅ collectErrors + buildRecordFromForm
-
-            if (errors.length) {
-                renderErrors(errors);
-                setMessage("❌ Исправьте ошибки формы", true);
-                return;
-            }
-
-            // ✅ Добавляем запись
-            const newRecord = {
-                id: getNextId(),
-                ...normalized,
-                status: raw.status
-            };
-
-            items.push(newRecord);
-            renderList(items);
-            renderErrors([]);
-            form.reset();
-            setMessage(`✅ Добавлена запись #${newRecord.id}`);
-        });
+    if (newUsers.length === 0) {
+      result += "Новых пользователей нет";
+    } else {
+      newUsers.forEach(item => {
+        result += `ID: ${item.id}, ФИО: ${item.title}, Сумма: ${item.value}, Дата: ${item.createdAt}\n`;
+      });
     }
 
-    // ✅ КНОПКА АСИНХРОННОЙ ЗАГРУЗКИ
-    document.getElementById("loadDataBtn")?.addEventListener("click", loadExternalData);
-    // Инициальный рендер
-    renderList(items);
+    output.textContent = result;
+  });
+
+  document.getElementById("btnStats")?.addEventListener("click", () => {
+    const output = document.getElementById("output");
+    if (!output) return;
+
+    const stats = buildStats(items);
+    output.textContent =
+      `Всего записей: ${stats.totalCount}\n` +
+      `Сумма value: ${stats.sumValue}\n` +
+      `Максимум value: ${stats.maxValue}\n` +
+      `Количество status="new": ${stats.newCount}\n` +
+      `Фильтр value >= ${appConfig.minValueForFilter}: ${items.filter(i => i.value >= appConfig.minValueForFilter).length}`;
+  });
+
+  document.getElementById("btnAll2")?.addEventListener("click", () => {
+    renderCards(items);
+  });
+
+  document.getElementById("btnNew2")?.addEventListener("click", () => {
+    renderCards(filterByStatus(items, "new"));
+  });
+
+  document.getElementById("btnSort2")?.addEventListener("click", () => {
+    renderCards(sortByValueDesc(items));
+  });
+
+  document.getElementById("btnStats2")?.addEventListener("click", () => {
+    renderStats();
+  });
+
+  const form = document.getElementById("recordForm");
+  if (form) {
+    form.addEventListener("submit", e => {
+      e.preventDefault();
+
+      const raw = {
+        title: document.getElementById("titleInput").value,
+        value: document.getElementById("valueInput").value,
+        createdAt: document.getElementById("createdAtInput").value,
+        status: document.getElementById("statusInput").value
+      };
+
+      const { errors, normalized } = validateForm(raw);
+
+      if (errors.length) {
+        renderErrors(errors);
+        setMessage("Исправьте ошибки формы", true);
+        return;
+      }
+
+      const newRecord = {
+        id: getNextId(),
+        title: normalized.title,
+        value: normalized.value,
+        status: normalized.status,
+        createdAt: normalized.createdAt
+      };
+
+      items.push(newRecord);
+      renderErrors([]);
+      form.reset();
+      renderCards(items);
+      setMessage(`Запись успешно добавлена: #${newRecord.id}`);
+    });
+  }
+
+  document.getElementById("loadDataBtn")?.addEventListener("click", async () => {
+    setMessage("Загрузка данных...");
+
+    const result = await safeFetchJson("https://jsonplaceholder.typicode.com/posts");
+
+    if (!result.ok) {
+      console.error(result.details);
+      setMessage(`Не удалось загрузить данные: ${result.error}`, true);
+      return;
+    }
+
+    const nextId = getNextId();
+    const newItems = result.data.slice(0, 5).map((post, idx) => ({
+      id: nextId + idx,
+      title: normalizeSpaces(String(post.title)).slice(0, 50),
+      value: normalizeApiValue(post.id * 10),
+      status: "new",
+      createdAt: new Date().toISOString().slice(0, 10)
+    }));
+
+    items.push(...newItems);
+    renderCards(items);
+    setMessage(`Загружено ${newItems.length} записей из API`);
+  });
+
+  renderCards(items);
 });
